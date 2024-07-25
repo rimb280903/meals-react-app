@@ -1,0 +1,32 @@
+.favorites {
+    margin: 20px;
+    text-align: center;
+  }
+  
+  .favorite-card {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .favorite-card h3 {
+    cursor: pointer;
+  }
+  
+  .favorite-card button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .favorite-card button:hover {
+    background-color: #0056b3;
+  }
+  

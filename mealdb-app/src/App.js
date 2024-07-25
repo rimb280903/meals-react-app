@@ -1,39 +1,49 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './App.css';
+import SearchBar from './components/SearchBar';
+import RecipeList from './components/RecipeList';
+import RecipeDetail from './components/RecipeDetail';
+import Favourites from './components/Favourites';
 
-class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      meals: [],
-    };
-  }
+const App = () => {
+  const [recipes, setRecipes] = useState([]);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [favorites, setFavorites] = useState(JSON.parse(localStorage.getItem('favorites')) || []);
 
-  componentDidMount() {
-    fetch('https://www.themealdb.com/api/json/v1/1/search.php?s=chicken')
-      .then(response => response.json())
-      .then(data => {
-        this.setState({ meals: data.meals });
-      });
-  }
+  useEffect(() => {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }, [favorites]);
 
-  render() {
-    const { meals } = this.state;
+  const searchRecipes = async (query) => {
+    const response = await axios.get(`https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`);
+    setRecipes(response.data.meals);
+  };
 
-    return (
-      <div className="App">
-        <h1>MealDB Recipes</h1>
-        <div className="meals">
-          {meals.map(meal => (
-            <div key={meal.idMeal} className="meal">
-              <h2>{meal.strMeal}</h2>
-              <img src={meal.strMealThumb} alt={meal.strMeal} />
-            </div>
-          ))}
-        </div>
+  const handleFavoriteToggle = (recipe) => {
+    const isFavorite = favorites.some(fav => fav.idMeal === recipe.idMeal);
+    if (isFavorite) {
+      setFavorites(favorites.filter(fav => fav.idMeal !== recipe.idMeal));
+    } else {
+      setFavorites([...favorites, recipe]);
+    }
+  };
+
+  return (
+    <div className="App">
+      <h1>Recipe App</h1>
+      <SearchBar onSearch={searchRecipes} />
+      <div className="content">
+        <RecipeList recipes={recipes} onSelect={setSelectedRecipe} />
+        <RecipeDetail
+          recipe={selectedRecipe}
+          isFavorite={favorites.some(fav => fav.idMeal === selectedRecipe?.idMeal)}
+          onFavoriteToggle={() => handleFavoriteToggle(selectedRecipe)}
+        />
+        <Favourites favorites={favorites} onSelect={setSelectedRecipe} onEdit={() => {}} />
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 export default App;
