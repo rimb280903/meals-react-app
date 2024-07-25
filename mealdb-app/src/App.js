@@ -15,9 +15,30 @@ const App = () => {
     localStorage.setItem('favorites', JSON.stringify(favorites));
   }, [favorites]);
 
+  useEffect(() => {
+    fetchRandomMeals(3);
+  }, []);
+
+  const fetchRandomMeals = async (count) => {
+    try {
+      const randomMeals = [];
+      for (let i = 0; i < count; i++) {
+        const response = await axios.get('https://www.themealdb.com/api/json/v1/1/random.php');
+        randomMeals.push(response.data.meals[0]);
+      }
+      setRecipes(randomMeals);
+    } catch (error) {
+      console.error("Failed to fetch meals:", error);
+    }
+  };
+
   const searchRecipes = async (query) => {
-    const response = await axios.get(`https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`);
-    setRecipes(response.data.meals);
+    try {
+      const response = await axios.get(`https://www.themealdb.com/api/json/v1/1/search.php?s=${query}`);
+      setRecipes(response.data.meals || []);
+    } catch (error) {
+      console.error("Failed to search recipes:", error);
+    }
   };
 
   const handleFavoriteToggle = (recipe) => {
@@ -27,6 +48,10 @@ const App = () => {
     } else {
       setFavorites([...favorites, recipe]);
     }
+  };
+
+  const handleRemove = (recipe) => {
+    setFavorites(favorites.filter(fav => fav.idMeal !== recipe.idMeal));
   };
 
   return (
@@ -40,7 +65,11 @@ const App = () => {
           isFavorite={favorites.some(fav => fav.idMeal === selectedRecipe?.idMeal)}
           onFavoriteToggle={() => handleFavoriteToggle(selectedRecipe)}
         />
-        <Favourites favorites={favorites} onSelect={setSelectedRecipe} onEdit={() => {}} />
+        <Favourites
+          favorites={favorites}
+          onSelect={setSelectedRecipe}
+          onRemove={handleRemove}
+        />
       </div>
     </div>
   );
